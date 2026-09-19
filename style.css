@@ -662,3 +662,15 @@ h2 {
 .analysisComplete.show {
   opacity: 1;
 }
+
+@media (max-width: 600px) {
+  #questionText {
+    font-size: 18px;
+    padding: 0 5px;
+  }
+}
+
+.resultPronoun {
+  white-space: nowrap;
+  display: inline-block;
+}
