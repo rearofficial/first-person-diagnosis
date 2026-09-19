@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一人称診断</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="container">
+
+    <!-- トップ画面 -->
+    <section id="startScreen">
+        <div class="symbol">◌</div>
+
+  <p class="smallTitle">SELF PRONOUN ANALYSIS</p>
+
+      <h1>一人称診断</h1>
+
+      <p class="subtitle">
+        あなたの「一人称」から、<br>
+        あなたの知らない一面を見つける。
+      </p>
+
+      <button id="startButton">診断をはじめる</button>
+    </section>
+
+
+    <!-- 診断画面 -->
+    <section id="quizScreen" class="hidden">
+
+      <p id="questionNumber">Q1 / 20</p>
+
+      <h2 id="questionText">
+        あなたは初対面の人と話すとき、どうする？
+      </h2>
+
+      <div id="answers">
+
+        <button class="answerButton">自分から話しかける</button>
+
+        <button class="answerButton">相手の様子を見てから話す</button>
+
+        <button class="answerButton">必要なことだけ話す</button>
+
+        <button class="answerButton">できれば相手から話しかけてほしい</button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

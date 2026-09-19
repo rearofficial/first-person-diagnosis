@@ -1,0 +1,664 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #111;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+}
+
+.container {
+  width: min(95%, 700px);
+  text-align: center;
+}
+
+h1 {
+  font-size: 42px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  margin-bottom: 24px;
+}
+
+.subtitle {
+  color: #aaa;
+  line-height: 2;
+  margin-bottom: 40px;
+}
+
+button {
+  padding: 16px 40px;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #fff;
+  color: #111;
+}.hidden {
+  display: none;
+}
+
+#questionNumber {
+  color: #777;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.7;
+  margin: 30px 0;
+}
+
+#answers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.answerButton {
+  width: 100%;
+}
+/* =====================
+   診断結果
+===================== */
+
+.resultType {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+#questionText {
+  letter-spacing: 0.05em;
+}
+
+#questionNumber {
+  margin-bottom: 20px;
+}
+.resultDescription {
+  max-width: 380px;
+  margin: 24px auto 0;
+  color: #bbb;
+  font-size: 16px;
+  line-height: 2;
+  text-align: left;
+}
+/* =====================
+   診断結果パーセントバー
+===================== */
+
+.resultPercent {
+  max-width: 420px;
+  margin: 30px auto 0;
+}
+
+.percentItem {
+  margin-bottom: 20px;
+}
+
+.percentLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.percentBar {
+  width: 100%;
+  height: 6px;
+  background: #333;
+  overflow: hidden;
+}
+
+.percentFill {
+  height: 100%;
+  background: #fff;
+  transition: width 0.8s ease;
+}
+/* =====================
+   結果画面デザイン
+===================== */
+
+.catchphrase {
+  margin: 10px 0 30px;
+  color: #fff;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  line-height: 1.8;
+}
+
+.resultType {
+  margin-bottom: 0;
+}
+
+.retryButton {
+  margin-top: 20px;
+  padding: 12px 30px;
+  font-size: 14px;
+}
+/* =====================
+   結果カード
+===================== */
+
+.resultType,
+.catchphrase,
+.resultPercent,
+.resultDescription,
+.retryButton {
+  animation: resultFadeIn 0.6s ease;
+}
+
+@keyframes resultFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* =====================
+   結果の一人称
+===================== */
+
+.resultQuestion {
+  font-size: 28px;
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+}
+/* =====================
+   一人称そのもの
+===================== */
+
+.resultPronoun {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 52px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+/* =====================
+   タイプ名
+===================== */
+
+.resultType {
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+/* =====================
+   TYPE番号
+===================== */
+
+.typeNumber {
+  margin: 0 0 4px;
+  color: #777;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  font-weight: 400;
+}
+/* =====================
+   タイプ名の強調
+===================== */
+
+.resultType {
+  font-size: 34px;
+  letter-spacing: 0.16em;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+/* =====================
+   キャッチコピー
+===================== */
+
+.catchphrase {
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  line-height: 1.9;
+  margin: 8px 0 34px;
+}
+/* =====================
+   診断データ
+===================== */
+
+.resultPercent {
+  margin-top: 38px;
+  padding-top: 28px;
+  border-top: 1px solid #333;
+}
+/* =====================
+   パーセントバー調整
+===================== */
+
+.percentBar {
+  height: 7px;
+}
+
+.percentItem {
+  margin-bottom: 22px;
+}
+/* =====================
+   タイプ説明
+===================== */
+
+.resultDescription {
+  margin-top: 34px;
+  padding: 24px;
+  border: 1px solid #333;
+  color: #bbb;
+  font-size: 15px;
+  line-height: 2;
+  text-align: left;
+}
+/* =====================
+   リトライボタン
+===================== */
+
+.retryButton {
+  margin-top: 36px;
+  padding: 13px 34px;
+  border: 1px solid #555;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+.retryButton:hover {
+  border-color: #fff;
+}
+.retryButton {
+  margin-top: 10px;
+  padding: 13px 34px;
+  border: 1px solid #555;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+/* =====================
+   結果画面 下部調整
+===================== */
+
+.resultDescription {
+  margin-bottom: 10px;
+}
+/* トップ画面・世界観 */
+
+.symbol {
+  font-size: 42px;
+  color: #aaa;
+  margin-bottom: 18px;
+  opacity: 0.8;
+}
+
+.smallTitle {
+  color: #777;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  margin-bottom: 18px;
+}
+#startScreen {
+  position: relative;
+  padding: 60px 30px;
+  border: 1px solid #292929;
+}
+
+#startScreen::before,
+#startScreen::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+}
+
+#startScreen::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid #888;
+  border-left: 1px solid #888;
+}
+
+#startScreen::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid #888;
+  border-right: 1px solid #888;
+}
+.symbol {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 72px;
+  height: 72px;
+  border: 1px solid #555;
+  border-radius: 50%;
+  font-size: 32px;
+  color: #aaa;
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.symbol::before {
+  content: "";
+  position: absolute;
+  width: 82px;
+  height: 82px;
+  border: 1px solid #292929;
+  border-radius: 50%;
+}
+
+.symbol::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #aaa;
+  border-radius: 50%;
+}
+#startButton {
+  position: relative;
+  min-width: 220px;
+  padding: 15px 32px;
+  border: 1px solid #555;
+  letter-spacing: 0.12em;
+  background: #111;
+}
+
+#startButton::after {
+  content: "→";
+  margin-left: 14px;
+  color: #777;
+  transition: 0.3s;
+}
+#startButton:hover::after {
+  margin-left: 22px;
+  color: #555;
+}
+#startButton:hover {
+  background: #111;
+  color: #fff;
+  border-color: #aaa;
+}
+/* 診断画面・世界観 */
+
+#quizScreen {
+  position: relative;
+  padding: 50px 30px;
+  border: 1px solid #292929;
+}
+
+#quizScreen::before,
+#quizScreen::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+}
+
+#quizScreen::before {
+  top: -1px;
+  right: -1px;
+  border-top: 1px solid #888;
+  border-right: 1px solid #888;
+}
+
+#quizScreen::after {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 1px solid #888;
+  border-left: 1px solid #888;
+}
+/* 質問番号・進行表示 */
+
+#questionNumber {
+  position: relative;
+  display: inline-block;
+  padding: 0 18px 10px;
+  color: #888;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+}
+
+#questionNumber::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: #333;
+}
+/* 質問文 */
+
+#questionText {
+  max-width: 560px;
+  margin: 38px auto;
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.9;
+  letter-spacing: 0.08em;
+}
+/* 回答ボタン */
+
+.answerButton {
+  position: relative;
+  padding: 18px 22px;
+  border: 1px solid #333;
+  background: #151515;
+  color: #ddd;
+  text-align: left;
+  letter-spacing: 0.04em;
+  transition: 0.3s ease;
+}
+
+.answerButton:hover {
+  background: #1d1d1d;
+  border-color: #888;
+  color: #fff;
+  transform: translateX(4px);
+}
+/* 回答番号 */
+
+.answerButton::before {
+  display: inline-block;
+  width: 28px;
+  margin-right: 10px;
+  color: #666;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+.answerButton:nth-child(1)::before {
+  content: "01";
+}
+
+.answerButton:nth-child(2)::before {
+  content: "02";
+}
+
+.answerButton:nth-child(3)::before {
+  content: "03";
+}
+
+.answerButton:nth-child(4)::before {
+  content: "04";
+}
+/* 診断の進行感 */
+
+#quizScreen::marker {
+  display: none;
+}
+
+#answers {
+  max-width: 560px;
+  margin: 0 auto;
+}
+/* 進捗ライン */
+
+#questionNumber::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 1px;
+  margin: 0 auto 10px;
+  background: #555;
+}
+/* 結果画面・RESULT */
+
+.resultLabel {
+  display: block;
+  margin-top: 6px;
+  color: #555;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  font-weight: 400;
+}
+
+#questionText {
+  width: 100%;
+  max-width: 650px;
+  padding: 0 20px;
+  margin-left: auto;
+  margin-right: auto;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+@media (max-width: 600px) {
+  #questionText {
+    font-size: 19px;
+  }
+}
+
+/* 結果画面・一人称 */
+
+.resultPronoun {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 28px;
+  border-top: 1px solid #555;
+  border-bottom: 1px solid #555;
+  font-size: 52px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+}
+
+/* TYPE番号 */
+
+.typeNumber {
+  margin-top: 32px;
+  color: #666;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+}
+
+/* タイプ名 */
+
+.resultType {
+  margin-top: 6px;
+  margin-bottom: 12px;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+}
+
+/* キャッチコピー */
+
+.catchphrase {
+  max-width: 520px;
+  margin: 18px auto 34px;
+  color: #ddd;
+  font-size: 17px;
+  line-height: 1.9;
+  letter-spacing: 0.08em;
+}
+
+/* 診断データ */
+
+.resultPercent {
+  max-width: 520px;
+  margin: 40px auto 0;
+  padding-top: 28px;
+  border-top: 1px solid #292929;
+}
+
+.percentLabel {
+  color: #aaa;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.percentBar {
+  height: 5px;
+  background: #222;
+}
+
+.percentFill {
+  background: #aaa;
+}
+
+/* 解析メーターアニメーション */
+
+.percentFill {
+  width: 0;
+  background: #aaa;
+  animation: meterFill 1s ease-out forwards;
+}
+
+@keyframes meterFill {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: var(--meter-width);
+  }
+}
+
+.percentItem:nth-child(1) .percentFill {
+  animation-delay: 0.1s;
+}
+
+.percentItem:nth-child(2) .percentFill {
+  animation-delay: 0.3s;
+}
+
+.percentItem:nth-child(3) .percentFill {
+  animation-delay: 0.5s;
+}
+
+.percentItem:nth-child(4) .percentFill {
+  animation-delay: 0.7s;
+}
+
+.analysisComplete {
+  margin: 0 0 24px;
+  color: #777;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-align: center;
+
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.analysisComplete.show {
+  opacity: 1;
+}
