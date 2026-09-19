@@ -674,3 +674,14 @@ h2 {
   white-space: nowrap;
   display: inline-block;
 }
+
+html {
+  touch-action: manipulation;
+}
+@media (max-width: 600px) {
+  .resultPronoun {
+    font-size: 42px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
