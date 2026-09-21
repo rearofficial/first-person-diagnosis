@@ -1,462 +1,433 @@
-const startScreen = document.getElementById("startScreen");
-const quizScreen = document.getElementById("quizScreen");
-const startButton = document.getElementById("startButton");
-
-const questionNumber = document.getElementById("questionNumber");
-const questionText = document.getElementById("questionText");
-let answerButtons = document.querySelectorAll(".answerButton");
-
-let currentQuestion = 0;
-let scores = {
-  self: 0,
-  action: 0,
-  distance: 0,
-  expression: 0
-};
-// =====================
-// 一人称判定
-// =====================
-
-function getPronoun() {
-
-  const self = scores.self > 0 ? "A" : "B";
-  const action = scores.action > 0 ? "A" : "B";
-  const distance = scores.distance > 0 ? "A" : "B";
-
-  const pattern = self + action + distance;
-
-  const pronouns = {
-    "AAA": "俺",
-    "ABA": "僕",
-    "BBA": "私",
-    "ABB": "自分",
-    "BAA": "うち",
-    "BBB": "わし",
-    "AAB": "あたい",
-    "BAB": "ぼくちん"
-  };
-
-  return pronouns[pattern];
-
-}
-
-
-// =====================
-// A / Bタイプ判定
-// =====================
-
-function getType() {
-
-  if (scores.expression > 0) {
-    return "A";
-  } else {
-    return "B";
-  }
-
-}
-
-
-// =====================
-// タイプ名
-// =====================
-
-function getTypeName(pronoun, type) {
-
-  const typeNames = {
-
-    "俺": {
-      A: "突破型",
-      B: "信念型"
-    },
-
-    "僕": {
-      A: "共感型",
-      B: "探究型"
-    },
-
-    "私": {
-      A: "分析型",
-      B: "調和型"
-    },
-
-    "自分": {
-      A: "探索型",
-      B: "内省型"
-    },
-
-    "うち": {
-      A: "親和型",
-      B: "独立型"
-    },
-
-    "わし": {
-      A: "経験型",
-      B: "達観型"
-    },
-
-    "あたい": {
-      A: "直感型",
-      B: "反骨型"
-    },
-
-    "ぼくちん": {
-      A: "愛嬌型",
-      B: "観察型"
-    }
-
-  };
-
-  return typeNames[pronoun][type];
-
-}
-// =====================
-// TYPE番号
-// =====================
-
-function getTypeNumber(pronoun, type) {
-
-  const typeNumbers = {
-
-    "俺_A": "TYPE 01",
-    "俺_B": "TYPE 02",
-
-    "僕_A": "TYPE 03",
-    "僕_B": "TYPE 04",
-
-    "私_A": "TYPE 05",
-    "私_B": "TYPE 06",
-
-    "自分_A": "TYPE 07",
-    "自分_B": "TYPE 08",
-
-    "うち_A": "TYPE 09",
-    "うち_B": "TYPE 10",
-
-    "わし_A": "TYPE 11",
-    "わし_B": "TYPE 12",
-
-    "あたい_A": "TYPE 13",
-    "あたい_B": "TYPE 14",
-
-    "ぼくちん_A": "TYPE 15",
-    "ぼくちん_B": "TYPE 16"
-
-  };
-
-  return typeNumbers[`${pronoun}_${type}`];
-
-}
-// =====================
-// タイプ説明
-// =====================
-
-function getTypeCatchphrase(pronoun, type) {
-
-  const catchphrases = {
-
-    "俺_A": "迷うより、まず動く。",
-    "俺_B": "自分の信じた道を進む。",
-    
-    "僕_A": "人の気持ちを、自分のことのように感じる。",
-    "僕_B": "気になったら、とことん知りたくなる。",
-
-    "私_A": "感情に流されず、静かに答えを探す。",
-    "私_B": "自分も相手も、大切にしたい。",
-
-    "自分_A": "知らない世界ほど、覗いてみたくなる。",
-    "自分_B": "答えは、自分の中で見つけたい。",
-
-    "うち_A": "人といると、自分らしくなれる。",
-    "うち_B": "誰かといても、自分は自分。",
-
-    "わし_A": "経験したことは、全部自分の糧になる。",
-    "わし_B": "少し離れて見るから、見えるものがある。",
-
-    "あたい_A": "理由はなくても、感覚が答えを知っている。",
-    "あたい_B": "みんなと同じじゃ、つまらない。",
-
-    "ぼくちん_A": "笑わせるのも、ひとつの才能。",
-    "ぼくちん_B": "何も考えてなさそうで、実は見ている。"
-
-  };
-
-  return catchphrases[`${pronoun}_${type}`];
-
-}
-
-function getTypeDescription(pronoun, type) {
-
-  const descriptions = {
-
-    "俺_A":
-      "考えるより先に動ける人。周囲に合わせるより、自分が納得できる道を選ぶ。失敗しても「やってみたかった」と思えるなら、それも経験に変えていく。",
-
-    "俺_B":
-      "静かに強い自分の軸を持つ人。簡単には意見を変えないけれど、納得できる理由があれば柔軟に考えられる。自分の選択に責任を持とうとする。",
-
-    "僕_A":
-      "人の気持ちを自然に想像できる人。自分のことだけでなく、相手がどう感じるかまで考えて行動する。優しいぶん、知らないうちに人の感情を背負うこともある。",
-
-    "僕_B":
-      "「なんで？」をそのままにできない人。答えを急がず、自分なりに考えて納得したい。興味を持ったことには意外なほど深く入り込む。",
-
-    "私_A":
-      "感情だけで決めず、一度立ち止まって考える人。物事を整理するのが得意で、周囲が見落としている部分にも気づきやすい。自分の内側ではかなり考えている。",
-
-    "私_B":
-      "人との関係や場の空気を大切にする人。自分だけが正しければいいとは考えず、みんなが納得できるところを探そうとする。争いは苦手でも、芯は意外と強い。",
-
-    "自分_A":
-      "「とりあえずやってみる」が似合う人。知らないものに対する好奇心が強く、経験しながら答えを見つけていく。予定通りにいかないことさえ楽しめる。",
-
-    "自分_B":
-      "自分の中でじっくり考える人。すぐに答えを出すより、納得するまで考えたい。静かに見えて、頭の中ではかなり多くのことを考えている。",
-
-    "うち_A":
-      "人との距離を縮めるのが自然にできる人。一緒に笑ったり、話したりする時間を大切にする。誰かといることで、自分らしさが出やすいタイプ。",
-
-    "うち_B":
-      "人と一緒にいることも好きだけど、自分の時間も同じくらい大切にする人。誰かに依存するより、自分で考えて自分で決めたい。",
-
-    "わし_A":
-      "経験から学ぶことを大切にする人。失敗も成功も「次に活かせばいい」と考えられる。時間が経つほど、判断に深みが出てくるタイプ。",
-
-    "わし_B":
-      "少し離れたところから物事を見るのが得意な人。簡単には動じず、感情に流されずに状況を見る。実は周囲が思っている以上に、いろいろなことを見ている。",
-
-    "あたい_A":
-      "「なんとなくこっち」が意外と当たる人。理屈より感覚を信じて動くことが多く、自分でも説明できないところで答えを見つける。",
-
-    "あたい_B":
-      "「みんながそうしてるから」では納得できない人。自分なりの考えを持ち、違うと思ったことにはちゃんと違うと言える。少し不器用でも、自分らしさは曲げない。",
-
-    "ぼくちん_A":
-      "自然体で人との距離を縮められる人。ちょっとふざけたり、場を和ませたりするのも得意。軽く見られることがあっても、実は周囲をよく見ている。",
-
-    "ぼくちん_B":
-      "一見ふわっとしているようで、実はかなり周囲を見ている人。人の言葉や態度の変化にも気づきやすい。あえて一歩引いて見ていることも多い。"
-
-  };
-
-  return descriptions[`${pronoun}_${type}`];
-
-}
-// =====================
-// 20問の診断データ
-// =====================
+// ========================================
+// 一人称診断 β
+// 20問 × 5択 / 8傾向 / 16タイプ
+// ========================================
+
+
+// ----------------------------------------
+// 質問データ
+// ----------------------------------------
 
 const questions = [
 
-  // ① 自分軸
   {
-    question: "自分の意見と周囲の意見が違ったら？",
+    text: "友人4人で食事をすることになった。みんなは同じ店に行こうとしているが、あなたは別の店が気になっている。",
     answers: [
-      "自分の意見をそのまま伝える",
-      "自分の意見を少し調整して伝える",
-      "相手の意見を聞いて考え直す",
-      "場の意見を優先する"
+      ["自分が行きたいなら、その店を提案する", { A: 2 }],
+      ["その店の何が気になったのか、自分でも少し考える", { D: 2, G: 1 }],
+      ["みんながその店を選んだ理由を聞く", { B: 2, E: 1, F: 1 }],
+      ["全員が納得できそうな別の店も探してみる", { C: 2, E: 1, H: 1 }],
+      ["なんとなく「こっちの方が面白そう」と感じた店を提案する", { G: 2, H: 1 }]
     ]
   },
 
   {
-    question: "何かを決めるとき、一番頼りにするのは？",
+    text: "友人から「絶対好きだと思う」と映画を勧められた。でも、予告を見る限り、あなたはそこまで興味を持てなかった。",
     answers: [
-      "自分の直感",
-      "自分の経験",
-      "周囲の意見",
-      "周囲がどう思うか"
+      ["せっかくだし、とりあえず観てみる", { E: 1, G: 1 }],
+      ["友人がどこを面白いと思ったのか聞く", { B: 2, E: 1 }],
+      ["今の自分が本当に観たい作品なのか考える", { D: 2 }],
+      ["今回はやめて、別の作品を提案する", { C: 2, E: 1, H: 1 }],
+      ["予告にはない面白さがありそうなら観てみる", { G: 2, H: 1 }]
     ]
   },
 
   {
-    question: "本当はやりたいけど、周りが反対していることがあったら？",
+    text: "あなたがやってみたいことに対して、周囲から「やめた方がいい」と言われた。",
     answers: [
-      "それでもやる",
-      "理由を聞いてから決める",
-      "かなり迷う",
-      "周りが反対するならやめる"
+      ["自分がやりたいなら、それでもやる", { A: 2, G: 1 }],
+      ["なぜ反対しているのか、理由を聞く", { B: 2, E: 1, F: 1 }],
+      ["実際に経験した人の話や情報を調べる", { B: 2, F: 2 }],
+      ["一度時間を置いて、自分の気持ちを整理する", { D: 2, G: 1 }],
+      ["別の方法なら実現できないか考える", { H: 2, G: 1 }]
     ]
   },
 
   {
-    question: "人から「こうした方がいい」と言われたとき？",
+    text: "友人と会う予定だったが、当日に「別のことをしない？」と提案された。",
     answers: [
-      "自分が納得しなければ変えない",
-      "参考にはする",
-      "相手の意見をかなり重視する",
-      "基本的に相手に合わせる"
+      ["面白そうなら、そのまま乗る", { G: 2, H: 1 }],
+      ["どうして予定を変えたいのか聞く", { B: 2, F: 1 }],
+      ["みんなが楽しめそうな別案を考える", { C: 2, E: 1, H: 1 }],
+      ["予定を変えることで困ることがないか考える", { C: 1, F: 2 }],
+      ["「そっちの方が楽しそう」と感じたら変更する", { G: 2 }]
     ]
   },
 
   {
-    question: "後悔するとしたら、どちらが多そう？",
+    text: "初めてやる仕事を「やり方は自由にしていい」と任された。",
     answers: [
-      "自分のやりたいことをやらなかった",
-      "もう少し自分を優先すればよかった",
-      "誰かを傷つけてしまった",
-      "周囲との関係を壊してしまった"
-    ]
-  },
-
-  // ② 行動軸
-  {
-    question: "新しいことを始めるとき？",
-    answers: [
-      "とりあえずやってみる",
-      "少し調べてからやる",
-      "かなり調べてから始める",
-      "失敗しない確信が持てるまで動かない"
+      ["まず自分なりの方法で始めてみる", { A: 2, G: 1 }],
+      ["先に基本的なやり方を確認する", { B: 2, F: 1 }],
+      ["経験者にコツや注意点を聞く", { B: 2, E: 1, F: 1 }],
+      ["全体の流れを見てから取りかかる", { F: 2, C: 1 }],
+      ["自分ならではのやり方ができないか考える", { H: 2, G: 1 }]
     ]
   },
 
   {
-    question: "旅行の計画は？",
+    text: "5人で何かを決めている。意見が2つに分かれ、どちらも譲らない。",
     answers: [
-      "ほぼノープラン",
-      "大まかに決める",
-      "ある程度細かく決める",
-      "時間までしっかり決める"
+      ["自分がいいと思う案を推す", { A: 2 }],
+      ["それぞれがなぜその案を選んだのか聞く", { B: 2, E: 1 }],
+      ["両方の良いところを組み合わせられないか考える", { C: 1, E: 1, H: 2 }],
+      ["全員が納得できる落としどころを探す", { C: 2, E: 1 }],
+      ["そもそも別の案がないか考える", { H: 2 }]
     ]
   },
 
   {
-    question: "突然チャンスがやってきたら？",
+    text: "知り合いが一人もいない集まりに参加した。",
     answers: [
-      "面白そうなら即乗る",
-      "条件を確認して乗る",
-      "一晩考える",
-      "リスクを全部確認してから決める"
+      ["気になる人がいたら自分から話しかける", { A: 1, E: 1 }],
+      ["近くの人と自然に話してみる", { E: 2 }],
+      ["誰かが話しかけてくるまで待つ", { D: 1, F: 1 }],
+      ["全体の雰囲気を見ながら過ごす", { F: 2 }],
+      ["必要な会話だけして、自分の時間を過ごす", { D: 2, F: 1 }]
     ]
   },
 
   {
-    question: "問題が起きたとき？",
+    text: "親しい友人がかなり悩んでいる様子で、あなたに相談してきた。",
     answers: [
-      "まず動いて解決する",
-      "動きながら考える",
-      "一度整理してから動く",
-      "原因を把握してから動く"
+      ["「こうしたら？」と自分の考えをすぐ伝える", { A: 2 }],
+      ["まず相手の話を最後まで聞く", { E: 2 }],
+      ["「自分ならどうするか」を一緒に考える", { E: 2, H: 1 }],
+      ["相手が何を求めているのか確認する", { B: 1, E: 2 }],
+      ["答えを急がず、相手が話し終わるまで聞く", { E: 2, D: 1 }]
     ]
   },
 
   {
-    question: "予定のない休日は？",
+    text: "初めて会った人から、「あなたの考え方って、面白いですね」と言われた。",
     answers: [
-      "起きてから決める",
-      "その日の気分で決める",
-      "前日くらいには決めたい",
-      "あらかじめ予定を作っておきたい"
-    ]
-  },
-
-  // ③ 距離軸
-  {
-    question: "初対面の人が集まる場所で？",
-    answers: [
-      "気になる人には自分から話しかける",
-      "話しかけられたら自然に話す",
-      "少し様子を見てから話す",
-      "必要なこと以外はあまり話さない"
+      ["「ありがとう」と普通に返す", { E: 1, G: 1 }],
+      ["「どの辺がそう思いました？」と聞く", { B: 2, E: 1 }],
+      ["少し照れながら、そのまま話を続ける", { E: 1, G: 1 }],
+      ["軽く笑って、その話題を流す", { F: 1 }],
+      ["その言葉がなぜかしばらく頭に残る", { D: 2, G: 1 }]
     ]
   },
 
   {
-    question: "友達と喧嘩したら？",
+    text: "友人と、あることについて意見が合わなくなった。",
     answers: [
-      "すぐ話して解決したい",
-      "少し時間を置いて話したい",
-      "相手から来るまで待つ",
-      "しばらく距離を置く"
+      ["自分の考えをはっきり伝える", { A: 2 }],
+      ["相手がそう考える理由をもう少し聞く", { B: 2, E: 1 }],
+      ["お互いの共通点を探してみる", { C: 2, E: 1 }],
+      ["その場で無理に結論を出さない", { D: 2, F: 1 }],
+      ["「別の見方もできるんじゃない？」と考える", { H: 2 }]
     ]
   },
 
   {
-    question: "誰かと仲良くなるスピードは？",
+    text: "人前でちょっとした失敗をしてしまった。",
     answers: [
-      "すぐ仲良くなる",
-      "比較的早い",
-      "時間をかける",
-      "なかなか心を開かない"
+      ["「今の失敗したな」と笑いに変える", { G: 1, H: 1 }],
+      ["何が原因だったのか考える", { B: 2, F: 1 }],
+      ["周囲にどう見られたか少し気になる", { E: 1, F: 2 }],
+      ["何事もなかったように、そのまま続ける", { A: 1, F: 1 }],
+      ["後から一人になって、自分の中で振り返る", { D: 2 }]
     ]
   },
 
   {
-    question: "悩みを相談されたら？",
+    text: "初めて行った場所で、周囲とは少し違うやり方をしている人を見かけた。",
     answers: [
-      "一緒に悩む",
-      "まず話をじっくり聞く",
-      "必要ならアドバイスする",
-      "相手から求められない限り踏み込まない"
+      ["面白そうなら自分も試してみる", { G: 1, H: 2 }],
+      ["なぜそのやり方をしているのか聞く", { B: 2, F: 1 }],
+      ["まず決まりやルールを確認する", { F: 2 }],
+      ["特に理由がなければ周囲と同じやり方にする", { C: 1, F: 1 }],
+      ["自分に合う方法なら取り入れてみる", { D: 1, G: 1, H: 2 }]
     ]
   },
 
   {
-    question: "初めて会った人に、自分のことを話すなら？",
+    text: "夜、友人から「今から遊ばない？」と連絡が来た。",
     answers: [
-      "結構いろいろ話す",
-      "聞かれたことなら話す",
-      "必要最低限にする",
-      "できるだけ自分のことは話さない"
-    ]
-  },
-
-  // ④ 表現軸
-  {
-    question: "嫌なことがあったとき？",
-    answers: [
-      "誰かに話す",
-      "信頼できる人には話す",
-      "まず自分の中で整理する",
-      "ほとんど誰にも話さない"
+      ["面白そうなら、すぐ行く", { G: 1, H: 2 }],
+      ["何をするのか聞いてから決める", { B: 2, E: 1 }],
+      ["明日の予定や時間を確認して決める", { F: 2, D: 1 }],
+      ["今日はやめておく", { D: 1, F: 1 }],
+      ["そのときの気分で決める", { G: 2 }]
     ]
   },
 
   {
-    question: "嬉しいことがあったら？",
+    text: "2つの選択肢があり、どちらにも良いところがある。どちらを選ぶか決めなければならない。",
     answers: [
-      "誰かにすぐ伝えたい",
-      "仲のいい人には伝える",
-      "自分の中で噛みしめる",
-      "わざわざ人には言わない"
+      ["直感で「こっち」と決める", { G: 2 }],
+      ["信頼できる人に話してみる", { E: 1, B: 1 }],
+      ["メリットとデメリットを整理する", { B: 2, F: 1 }],
+      ["一晩置いてから決める", { D: 2 }],
+      ["選んだ後にどうなるか、いくつかの可能性を考える", { F: 1, H: 2 }]
     ]
   },
 
   {
-    question: "腹が立ったとき？",
+    text: "親しい友人から、最近起きた出来事について相談された。友人自身も、どうすればいいのか迷っている。",
     answers: [
-      "その場で言う",
-      "落ち着いてから伝える",
-      "なるべく飲み込む",
-      "何も言わず自分の中で処理する"
+      ["「それは大変だったね」と、まず話を聞く", { E: 2 }],
+      ["「自分ならこうする」と意見を伝える", { A: 2 }],
+      ["「どうしたいと思ってる？」と相手に聞く", { E: 2 }],
+      ["自分の経験に似た話があれば、それを話す", { E: 1, G: 1 }],
+      ["すぐに答えを出さず、相手が話し終わるまで聞く", { E: 2, D: 1 }]
     ]
   },
 
   {
-    question: "「好き」「嫌い」を人に伝えるのは？",
+    text: "自分なりにやっていた方法を、誰かから厳しく指摘された。",
     answers: [
-      "かなりハッキリ伝える",
-      "相手によっては伝える",
-      "あまり言葉にはしない",
-      "言わなくても分かると思う"
+      ["納得できなければ、その場で反論する", { A: 2 }],
+      ["まず何が問題なのか聞く", { B: 2, F: 1 }],
+      ["一度持ち帰って、自分なりに考える", { D: 2 }],
+      ["自分にも原因がなかったか振り返る", { D: 2, F: 1 }],
+      ["今は判断せず、少し距離を置く", { F: 2, D: 1 }]
     ]
   },
 
   {
-    question: "自分の弱いところを人に見せるのは？",
+    text: "今日は一日、何の予定もない。",
     answers: [
-      "あまり抵抗がない",
-      "信頼できる人なら見せられる",
-      "できれば見せたくない",
-      "絶対に見せたくない"
+      ["起きてから面白そうなことを探す", { G: 1, H: 2 }],
+      ["誰かに連絡してみる", { E: 2 }],
+      ["前から気になっていたことをやる", { D: 1, A: 1 }],
+      ["家で好きなことをして過ごす", { D: 2 }],
+      ["その日の気分で、やることを変える", { G: 2, H: 1 }]
+    ]
+  },
+
+  {
+    text: "グループで作業をしているが、誰も進行役をしようとしない。",
+    answers: [
+      ["自分が進める", { A: 2 }],
+      ["まずみんなに意見を聞く", { E: 2 }],
+      ["役割を決めることを提案する", { C: 2 }],
+      ["誰かが始めるまで少し様子を見る", { F: 2 }],
+      ["今のやり方以外に、もっと効率的な方法がないか考える", { H: 2 }]
+    ]
+  },
+
+  {
+    text: "何年も会っていない友人から突然、「久しぶり」と連絡が来た。",
+    answers: [
+      ["気づいたら、すぐ返信している", { E: 2 }],
+      ["「最近どうしてる？」と近況を聞き返す", { E: 2, B: 1 }],
+      ["なぜ今連絡してきたのか少し気になる", { F: 2 }],
+      ["時間があるときに返信する", { D: 1, F: 1 }],
+      ["返信する前に、少し考える", { D: 2 }]
+    ]
+  },
+
+  {
+    text: "ずっと迷っていたことを、今日中に決めなければならなくなった。",
+    answers: [
+      ["もう決めて、動き始める", { A: 2 }],
+      ["誰かに話して、自分の考えを整理する", { E: 1, H: 1 }],
+      ["最後に必要な情報を確認する", { B: 2, F: 2 }],
+      ["自分が一番納得できる方を選ぶ", { D: 2 }],
+      ["決めた後にどう動くかまで考えてから決める", { F: 1, H: 2 }]
     ]
   }
 
 ];
 
 
-// =====================
-// 質問を表示
-// =====================
+// ----------------------------------------
+// 状態
+// ----------------------------------------
+
+let currentQuestion = 0;
+
+const scores = {
+  A: 0, // 自律
+  B: 0, // 理解
+  C: 0, // 調整
+  D: 0, // 内省
+  E: 0, // 関係
+  F: 0, // 観察
+  G: 0, // 感覚
+  H: 0  // 発想
+};
+
+let externalScore = 0;
+
+
+// ----------------------------------------
+// 8種類の一人称
+// ----------------------------------------
+
+const pronouns = {
+  A: "俺",
+  B: "僕",
+  C: "私",
+  D: "自分",
+  E: "うち",
+  F: "わし",
+  G: "あたい",
+  H: "ぼくちん"
+};
+
+
+// ----------------------------------------
+// 16タイプ
+// ----------------------------------------
+
+const typeData = {
+
+  "俺-A": {
+    number: "01",
+    name: "突破型",
+    catch: "自分で決めた。だから、まず動く。",
+    description: "自分の意思を基準に判断し、迷ったときも自分で決めて前へ進むタイプ。周囲の意見を聞きながらも、最後の決断は自分で引き受ける。"
+  },
+
+  "俺-B": {
+    number: "02",
+    name: "単独突破型",
+    catch: "誰かが決めるのを待つより、自分で道を作る。",
+    description: "自分の中で方向を決める力が強く、周囲に流されず進めるタイプ。外に答えを求めるより、自分自身の判断を信じる傾向がある。"
+  },
+
+  "僕-A": {
+    number: "03",
+    name: "対話型",
+    catch: "話してみる。そこから答えが見えてくる。",
+    description: "人とのやり取りを通じて考えを深めるタイプ。相手の意見を聞きながら、自分の考えも整理していく。"
+  },
+
+  "僕-B": {
+    number: "04",
+    name: "熟考型",
+    catch: "なぜそうなるのか。それを知ってから動きたい。",
+    description: "物事の理由や仕組みを理解してから判断するタイプ。勢いだけで決めず、自分なりに情報を整理して納得することを大切にする。"
+  },
+
+  "私-A": {
+    number: "05",
+    name: "調整型",
+    catch: "自分だけじゃなく、全体がうまくいく形へ。",
+    description: "周囲の意見や状況を見ながら、全体がうまく収まる形を探すタイプ。対立を避けるというより、より良い着地点を作ろうとする。"
+  },
+
+  "私-B": {
+    number: "06",
+    name: "静観型",
+    catch: "急いで決めるより、まず全体を見る。",
+    description: "その場の流れにすぐ乗らず、一歩引いて状況を見られるタイプ。自分の中で整理しながら、無理のない答えを探していく。"
+  },
+
+  "自分-A": {
+    number: "07",
+    name: "探究型",
+    catch: "自分なりの答えを、外の世界で確かめる。",
+    description: "自分の基準を持ちながら、外の情報や人とのやり取りから答えを深めるタイプ。自分だけの方法を探すことにも抵抗がない。"
+  },
+
+  "自分-B": {
+    number: "08",
+    name: "内省型",
+    catch: "答えは、自分の中で納得できるかどうか。",
+    description: "周囲の評価より、自分自身が納得できるかを重視するタイプ。一人で考える時間を使いながら、自分なりの答えを作っていく。"
+  },
+
+  "うち-A": {
+    number: "09",
+    name: "共鳴型",
+    catch: "一緒に考えるからこそ、見えてくるものがある。",
+    description: "人とのつながりを大切にし、誰かと一緒に考えることで力を発揮するタイプ。相手の気持ちや関係性を自然に意識する。"
+  },
+
+  "うち-B": {
+    number: "10",
+    name: "感受型",
+    catch: "言葉にならないものまで、ちゃんと感じている。",
+    description: "人との関係やその場の空気を繊細に受け取るタイプ。すぐに答えを出すより、感じたことを自分の中で受け止める傾向がある。"
+  },
+
+  "わし-A": {
+    number: "11",
+    name: "指南型",
+    catch: "見極めたものを、誰かと共有する。",
+    description: "状況を観察しながら、人とのやり取りを通じて判断を深めるタイプ。経験や事実をもとに、周囲に道筋を示すこともある。"
+  },
+
+  "わし-B": {
+    number: "12",
+    name: "観察型",
+    catch: "まだ決めない。まず、ちゃんと見る。",
+    description: "すぐに判断せず、状況や情報をじっくり見るタイプ。感情に流されず、一歩引いた視点から物事を捉える。"
+  },
+
+  "あたい-A": {
+    number: "13",
+    name: "表現型",
+    catch: "面白いと思ったなら、それが始める理由になる。",
+    description: "自分の感覚や直感を行動に変えやすいタイプ。頭で考えすぎるより、感じたことを外の世界で試すことで答えを見つける。"
+  },
+
+  "あたい-B": {
+    number: "14",
+    name: "感覚探究型",
+    catch: "説明できなくても、なんとなく分かる。",
+    description: "自分の感覚を大切にしながら、内側でじっくり確かめるタイプ。理屈だけでは説明できない感覚を判断材料にする。"
+  },
+
+  "ぼくちん-A": {
+    number: "15",
+    name: "発想型",
+    catch: "そのやり方じゃなくても、いいんじゃない？",
+    description: "既存の方法にとらわれず、新しい可能性を探すタイプ。人との会話や行動の中から、思いがけないアイデアを生み出す。"
+  },
+
+  "ぼくちん-B": {
+    number: "16",
+    name: "自由思考型",
+    catch: "答えはひとつじゃない。たぶん。",
+    description: "一つの正解に決めつけず、別の可能性を考え続けるタイプ。自分の中で自由に発想を広げながら、独自の答えを探す。"
+  }
+
+};
+
+
+// ----------------------------------------
+// 画面取得
+// ----------------------------------------
+
+const startScreen = document.getElementById("startScreen");
+const quizScreen = document.getElementById("quizScreen");
+
+const startButton = document.getElementById("startButton");
+const questionNumber = document.getElementById("questionNumber");
+const questionText = document.getElementById("questionText");
+const answersContainer = document.getElementById("answers");
+
+
+// ----------------------------------------
+// 診断開始
+// ----------------------------------------
+
+startButton.addEventListener("click", () => {
+
+  currentQuestion = 0;
+
+  Object.keys(scores).forEach(key => {
+    scores[key] = 0;
+  });
+
+  externalScore = 0;
+
+  startScreen.classList.add("hidden");
+  quizScreen.classList.remove("hidden");
+
+  showQuestion();
+
+});
+
+
+// ----------------------------------------
+// 質問表示
+// ----------------------------------------
 
 function showQuestion() {
 
@@ -465,240 +436,259 @@ function showQuestion() {
   questionNumber.textContent =
     `Q${currentQuestion + 1} / ${questions.length}`;
 
-  questionText.textContent = question.question;
+  questionText.textContent = question.text;
 
-  answerButtons.forEach(function(button, index) {
-    button.textContent = question.answers[index];
+  answersContainer.innerHTML = "";
+
+  question.answers.forEach((answer, index) => {
+
+    const button = document.createElement("button");
+
+    button.className = "answerButton";
+
+    button.textContent = answer[0];
+
+    button.dataset.number =
+      String(index + 1).padStart(2, "0");
+
+    button.addEventListener("click", () => {
+
+      selectAnswer(answer[1]);
+
+    });
+
+    answersContainer.appendChild(button);
+
   });
 
 }
 
 
-// =====================
-// スタート
-// =====================
+// ----------------------------------------
+// 回答処理
+// ----------------------------------------
 
-startButton.addEventListener("click", function() {
+function selectAnswer(answerScore) {
 
-  startScreen.classList.add("hidden");
-  quizScreen.classList.remove("hidden");
+  Object.keys(answerScore).forEach(key => {
 
-  currentQuestion = 0;
+    scores[key] += answerScore[key];
 
-  showQuestion();
-
-});
+  });
 
 
-// =====================
-// 回答・結果・リトライ
-// =====================
+  // ------------------------------------
+  // A/B判定用
+  // A = 外に出しながら整理する傾向
+  // B = 内側で整理してから動く傾向
+  // ------------------------------------
+
+  const externalChoices = ["A", "E", "G", "H"];
+  const internalChoices = ["D", "F"];
+
+  let external = 0;
+  let internal = 0;
+
+  externalChoices.forEach(key => {
+    if (answerScore[key]) {
+      external += answerScore[key];
+    }
+  });
+
+  internalChoices.forEach(key => {
+    if (answerScore[key]) {
+      internal += answerScore[key];
+    }
+  });
+
+  externalScore += external - internal;
+
+
+  currentQuestion++;
+
+  if (currentQuestion < questions.length) {
+
+    showQuestion();
+
+  } else {
+
+    showResult();
+
+  }
+
+}
+
+
+// ----------------------------------------
+// 一人称決定
+// ----------------------------------------
+
+function getPronoun() {
+
+  const axisScores = {
+    A: scores.A,
+    B: scores.B,
+    C: scores.C,
+    D: scores.D,
+    E: scores.E,
+    F: scores.F,
+    G: scores.G,
+    H: scores.H
+  };
+
+  const sorted = Object.entries(axisScores)
+    .sort((a, b) => b[1] - a[1]);
+
+  return pronouns[sorted[0][0]];
+
+}
+
+
+// ----------------------------------------
+// A/B決定
+// ----------------------------------------
+
+function getProcessType() {
+
+  if (externalScore >= 0) {
+    return "A";
+  }
+
+  return "B";
+
+}
+
+
+// ----------------------------------------
+// 結果表示
+// ----------------------------------------
 
 function showResult() {
 
   const pronoun = getPronoun();
-  const type = getType();
-  const typeName = getTypeName(pronoun, type);
-  const typeNumber = getTypeNumber(pronoun, type);
-  const description = getTypeDescription(pronoun, type);
-const catchphrase = getTypeCatchphrase(pronoun, type);
 
-  const selfPercent =
-    Math.round((scores.self + 10) / 20 * 100);
+  const processType = getProcessType();
 
-  const actionPercent =
-    Math.round((scores.action + 10) / 20 * 100);
+  const type = typeData[`${pronoun}-${processType}`];
 
-  const distancePercent =
-    Math.round((scores.distance + 10) / 20 * 100);
+  quizScreen.innerHTML = `
 
-  const expressionPercent =
-    Math.round((scores.expression + 10) / 20 * 100);
+    <div class="resultScreen">
 
-questionNumber.innerHTML = "RESULT<br><span class=\"resultLabel\">診断結果</span>";
-    questionText.innerHTML =
-  `あなたの一人称は<br><span class="resultPronoun">「${pronoun}」</span>`;
+      <p class="analysisComplete" id="analysisComplete">
+        ANALYSIS COMPLETE
+      </p>
 
-questionText.classList.add("resultQuestion");
-  document.getElementById("answers").innerHTML =
-`<p class="analysisComplete">ANALYSIS COMPLETE</p>
- <p class="typeNumber">${typeNumber}</p><p class="resultType">${typeName}</p>
- <p class="catchphrase">${catchphrase}</p>
+      <p class="smallTitle">RESULT</p>
 
-     <div class="resultPercent">
+      <h2 class="resultQuestion">
+        あなたの一人称は
+      </h2>
 
-       <div class="percentItem">
-         <div class="percentLabel">
-           <span>自分軸</span>
-           <span class="percentNumber" data-value="${selfPercent}">0%</span>
-           </div>
-         <div class="percentBar">
-           <div class="percentFill" style="--meter-width: ${selfPercent}%"></div>
-         </div>
-       </div>
+      <div class="resultPronoun">
+        ${pronoun}
+      </div>
 
-       <div class="percentItem">
-         <div class="percentLabel">
-           <span>行動力</span>
-<span class="percentNumber" data-value="${actionPercent}">0%</span>         </div>
-         <div class="percentBar">
-           <div class="percentFill" style="--meter-width: ${actionPercent}%"></div>
-         </div>
-       </div>
+      <p class="typeNumber">
+        TYPE ${type.number}
+      </p>
 
-       <div class="percentItem">
-         <div class="percentLabel">
-           <span>距離感</span>
-<span class="percentNumber" data-value="${distancePercent}">0%</span>         </div>
-         <div class="percentBar">
-           <div class="percentFill" style="--meter-width: ${distancePercent}%"></div>
-         </div>
-       </div>
+      <div class="resultType">
+        ${type.name}
+      </div>
 
-       <div class="percentItem">
-         <div class="percentLabel">
-           <span>表現力</span>
-<span class="percentNumber" data-value="${expressionPercent}">0%</span>         </div>
-         <div class="percentBar">
-           <div class="percentFill" style="--meter-width: ${expressionPercent}%"></div>
-         </div>
-       </div>
+      <p class="catchphrase">
+        ${type.catch}
+      </p>
 
-     </div>
+      <div class="resultPercent">
 
-     <p class="resultDescription">${description}</p>
+        ${createMeter("自己決定", scores.A, scores.A, "自分で決める")}
 
-     <button id="retryButton" class="retryButton">
-       もう一度診断する
-     </button>`;
-       animatePercentNumbers();
+        ${createMeter("理解", scores.B, scores.B, "理由を知る")}
+
+        ${createMeter("調整", scores.C, scores.C, "全体を整える")}
+
+        ${createMeter("内省", scores.D, scores.D, "自分の中で考える")}
+
+      </div>
+
+      <div class="resultDescription">
+        ${type.description}
+      </div>
+
+      <button class="retryButton" id="retryButton">
+        もう一度診断する
+      </button>
+
+    </div>
+
+  `;
+
+
+  animateResult();
+
+
+  document
+    .getElementById("retryButton")
+    .addEventListener("click", () => {
+
+      location.reload();
+
+    });
+
 }
 
 
-function resetQuiz() {
+// ----------------------------------------
+// メーター生成
+// ----------------------------------------
 
-  currentQuestion = 0;
+function createMeter(label, value) {
 
-  scores = {
-    self: 0,
-    action: 0,
-    distance: 0,
-    expression: 0
-  };
+  const maxValue = 20;
 
-  document.getElementById("answers").innerHTML =
-    `<button class="answerButton"></button>
-     <button class="answerButton"></button>
-     <button class="answerButton"></button>
-     <button class="answerButton"></button>`;
+  let percent =
+    Math.round(((value + maxValue) / (maxValue * 2)) * 100);
 
-  answerButtons =
-    document.querySelectorAll(".answerButton");
+  percent = Math.max(0, Math.min(100, percent));
 
-  showQuestion();
+  return `
+
+    <div class="percentItem">
+
+      <div class="percentLabel">
+        <span>${label}</span>
+        <span>${percent}%</span>
+      </div>
+
+      <div class="percentBar">
+        <div
+          class="percentFill"
+          style="--meter-width:${percent}%">
+        </div>
+      </div>
+
+    </div>
+
+  `;
+
 }
 
 
-// =====================
-// 回答ボタン
-// =====================
+// ----------------------------------------
+// 結果演出
+// ----------------------------------------
 
-document.getElementById("answers").addEventListener("click", function(event) {
+function animateResult() {
 
-  // もう一度診断する
-  if (event.target.id === "retryButton") {
+  const complete =
+    document.getElementById("analysisComplete");
 
-    resetQuiz();
+  setTimeout(() => {
 
-    return;
-  }
+    complete.classList.add("show");
 
+  }, 900);
 
-  // 回答ボタン
-  if (event.target.classList.contains("answerButton")) {
-
-    const index =
-      Array.from(answerButtons).indexOf(event.target);
-
-    const answerScores = [2, 1, -1, -2];
-
-    const point = answerScores[index];
-
-
-    if (currentQuestion < 5) {
-
-      scores.self += point;
-
-    } else if (currentQuestion < 10) {
-
-      scores.action += point;
-
-    } else if (currentQuestion < 15) {
-
-      scores.distance += point;
-
-    } else {
-
-      scores.expression += point;
-
-    }
-
-
-    console.log(
-      `Q${currentQuestion + 1}`,
-      `回答${index + 1}`,
-      `点数: ${point}`,
-      scores
-    );
-
-
-    currentQuestion++;
-
-
-    if (currentQuestion < questions.length) {
-
-      showQuestion();
-
-    } else {
-
-      console.log("最終スコア:", scores);
-
-      showResult();
-
-    }
-
-  }
-
-});
-
-function animatePercentNumbers() {
-
-  const numbers = document.querySelectorAll(".percentNumber");
-
-  numbers.forEach((number, index) => {
-
-    const target = Number(number.dataset.value);
-    let current = 0;
-
-    const timer = setInterval(() => {
-
-      current++;
-
-      number.textContent = current + "%";
-
-      if (current >= target) {
-        clearInterval(timer);
-
-        if (index === numbers.length - 1) {
-          const complete = document.querySelector(".analysisComplete");
-
-          if (complete) {
-            complete.classList.add("show");
-          }
-        }
-      }
-
-    }, 20);
-
-  });
 }
