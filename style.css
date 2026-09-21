@@ -500,6 +500,8 @@ h2 {
 .answerButton:nth-child(4)::before {
   content: "04";
 }
+
+.answerButton:nth-child(5)::before { content: "05"; }
 /* 診断の進行感 */
 
 #quizScreen::marker {
