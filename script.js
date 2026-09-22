@@ -617,6 +617,10 @@ function showResult() {
         ${type.description}
       </div>
 
+<button class="shareButton" id="shareButton">
+  結果をシェア
+</button>
+
       <button class="retryButton" id="retryButton">
         もう一度診断する
       </button>
@@ -628,7 +632,41 @@ function showResult() {
 
   animateResult();
 
+document
+  .getElementById("shareButton")
+  .addEventListener("click", async () => {
 
+    const shareText =
+      `一人称診断の結果は「${pronoun}」でした。\n` +
+      `TYPE ${type.number} ${type.name}\n` +
+      `${type.catch}\n\n` +
+      `#一人称診断`;
+
+    if (navigator.share) {
+
+      try {
+
+        await navigator.share({
+          title: "一人称診断",
+          text: shareText,
+          url: window.location.href
+        });
+
+      } catch (error) {
+
+        console.log("共有をキャンセルしました");
+
+      }
+
+    } else {
+
+      alert(
+        "この端末では共有機能に対応していません。"
+      );
+
+    }
+
+  });
   document
     .getElementById("retryButton")
     .addEventListener("click", () => {
