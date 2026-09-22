@@ -695,3 +695,331 @@ html {
   margin: 0 auto 18px;
   filter: brightness(0) invert(1);
 }
+
+/* ========================================
+   相性セクション
+======================================== */
+
+.compatibilitySection {
+  margin-top: 50px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.compatibilitySection .smallTitle {
+  text-align: center;
+  letter-spacing: 0.25em;
+  margin-bottom: 24px;
+  opacity: 0.75;
+}
+
+
+/* ----------------------------------------
+   相性カード
+---------------------------------------- */
+
+.compatibilityItem {
+  position: relative;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  margin-bottom: 16px;
+  padding: 22px 24px;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  text-align: center;
+
+  overflow: hidden;
+}
+
+
+/* 上部の細いライン */
+
+.compatibilityItem::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 15%;
+
+  width: 70%;
+  height: 1px;
+
+  background: rgba(255, 255, 255, 0.45);
+
+  opacity: 0.6;
+}
+
+
+/* ----------------------------------------
+   相性カテゴリ
+---------------------------------------- */
+
+.compatibilityCategory {
+  font-size: 11px;
+
+  letter-spacing: 0.22em;
+
+  opacity: 0.55;
+
+  margin-bottom: 14px;
+}
+
+
+/* ----------------------------------------
+   一人称
+---------------------------------------- */
+
+.compatibilityPronoun {
+  font-size: 30px;
+
+  font-weight: 500;
+
+  letter-spacing: 0.08em;
+
+  margin-bottom: 6px;
+}
+
+
+/* ----------------------------------------
+   TYPE
+---------------------------------------- */
+
+.compatibilityType {
+  font-size: 12px;
+
+  letter-spacing: 0.14em;
+
+  opacity: 0.65;
+
+  margin-bottom: 8px;
+}
+
+
+/* ----------------------------------------
+   キャッチコピー
+---------------------------------------- */
+
+.compatibilityCatch {
+  font-size: 13px;
+
+  line-height: 1.8;
+
+  opacity: 0.75;
+
+  margin-top: 10px;
+}
+
+
+/* ----------------------------------------
+   スマホ
+---------------------------------------- */
+
+@media (max-width: 600px) {
+
+  .compatibilitySection {
+    margin-top: 40px;
+    padding: 0 14px;
+    box-sizing: border-box;
+  }
+
+  .compatibilityItem {
+    padding: 20px 18px;
+    margin-bottom: 14px;
+  }
+
+  .compatibilityPronoun {
+    font-size: 27px;
+  }
+
+  .compatibilityCatch {
+    font-size: 12px;
+  }
+
+}
+
+/* ========================================
+   RESULT / FUTURE ANALYSIS
+======================================== */
+
+.resultScreen {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ----------------------------------------
+   ANALYSIS COMPLETE
+---------------------------------------- */
+
+.analysisComplete {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+
+.analysisComplete.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ----------------------------------------
+   一人称
+---------------------------------------- */
+
+.resultPronoun {
+  opacity: 0;
+  transform: scale(0.88);
+  filter: blur(8px);
+
+  transition:
+    opacity 1.2s ease,
+    transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 1.2s ease;
+
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.35),
+    0 0 24px rgba(255,255,255,0.12);
+}
+
+.resultPronoun.reveal {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+
+/* ----------------------------------------
+   TYPE
+---------------------------------------- */
+
+.typeNumber,
+.resultType,
+.catchphrase,
+.resultPercent,
+.resultDescription,
+.compatibilitySection,
+.shareButton,
+.retryButton {
+
+  opacity: 0;
+  transform: translateY(18px);
+
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+
+.resultVisible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+
+/* ----------------------------------------
+   一人称の発光ライン
+---------------------------------------- */
+
+.resultPronoun::after {
+  content: "";
+
+  display: block;
+
+  width: 0;
+  height: 1px;
+
+  margin: 14px auto 0;
+
+  background: rgba(255,255,255,0.65);
+
+  transition: width 1s ease 0.5s;
+}
+
+.resultPronoun.reveal::after {
+  width: 70px;
+}
+
+
+/* ----------------------------------------
+   スマホ
+---------------------------------------- */
+
+@media (max-width: 600px) {
+
+  .resultPronoun {
+    font-size: 58px;
+  }
+
+}
+
+/* ----------------------------------------
+   結果演出・最終調整
+---------------------------------------- */
+
+/* TYPE系は最初は隠す */
+.resultScreen .typeNumber,
+.resultScreen .resultType,
+.resultScreen .catchphrase {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(12px);
+}
+
+/* TYPE系が登場したら表示 */
+.resultScreen .typeNumber.resultVisible,
+.resultScreen .resultType.resultVisible,
+.resultScreen .catchphrase.resultVisible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0);
+}
+
+/* それ以外の結果要素は
+   resultVisible が付いたら必ず表示 */
+.resultScreen .resultPercent.resultVisible,
+.resultScreen .resultDescription.resultVisible,
+.resultScreen .compatibilitySection.resultVisible,
+.resultScreen .shareButton.resultVisible,
+.resultScreen .retryButton.resultVisible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+/* ----------------------------------------
+   結果画面：TYPE部分だけ演出
+---------------------------------------- */
+
+.resultScreen .typeNumber,
+.resultScreen .resultType,
+.resultScreen .catchphrase {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.resultScreen .typeNumber.resultVisible,
+.resultScreen .resultType.resultVisible,
+.resultScreen .catchphrase.resultVisible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* メーター以降は常時表示 */
+.resultScreen .resultPercent,
+.resultScreen .resultDescription,
+.resultScreen .compatibilitySection,
+.resultScreen .shareButton,
+.resultScreen .retryButton {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
