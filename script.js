@@ -389,6 +389,182 @@ const typeData = {
 
 };
 
+// ----------------------------------------
+// 相性判定
+// ----------------------------------------
+
+function getTypeKeyFromScores() {
+
+  const pronoun = getPronoun();
+  const processType = getProcessType();
+
+  return `${pronoun}-${processType}`;
+
+}
+
+
+// ----------------------------------------
+// 16タイプの相性計算
+// ----------------------------------------
+
+function calculateCompatibility(myTypeKey) {
+
+  const myPronoun = myTypeKey.split("-")[0];
+  const myProcess = myTypeKey.split("-")[1];
+
+  const myAxis = {
+    A: scores.A,
+    B: scores.B,
+    C: scores.C,
+    D: scores.D,
+    E: scores.E,
+    F: scores.F,
+    G: scores.G,
+    H: scores.H
+  };
+
+  const results = [];
+
+  Object.keys(typeData).forEach(typeKey => {
+
+    if (typeKey === myTypeKey) return;
+
+    const [otherPronoun, otherProcess] =
+      typeKey.split("-");
+
+    const otherAxis = getTypeAxis(otherPronoun);
+
+    let similarity = 0;
+    let difference = 0;
+
+    Object.keys(myAxis).forEach(key => {
+
+      const myValue = myAxis[key];
+      const otherValue = otherAxis[key];
+
+      similarity +=
+        Math.min(Math.abs(myValue), Math.abs(otherValue));
+
+      difference +=
+        Math.abs(myValue - otherValue);
+
+    });
+
+    // A/Bの組み合わせ
+    const processBonus =
+      myProcess === otherProcess ? 8 : 4;
+
+    const score =
+      similarity * 1.5 +
+      processBonus -
+      difference * 0.3;
+
+    results.push({
+      key: typeKey,
+      score: score
+    });
+
+  });
+
+  results.sort((a, b) => b.score - a.score);
+
+  return results;
+
+}
+
+
+// ----------------------------------------
+// 一人称ごとの傾向軸
+// ----------------------------------------
+
+function getTypeAxis(pronoun) {
+
+  const axisMap = {
+
+    "俺": {
+      A: 5, B: 1, C: 1, D: 1,
+      E: 1, F: 1, G: 3, H: 2
+    },
+
+    "僕": {
+      A: 1, B: 5, C: 1, D: 2,
+      E: 3, F: 2, G: 1, H: 2
+    },
+
+    "私": {
+      A: 1, B: 2, C: 5, D: 2,
+      E: 3, F: 3, G: 1, H: 1
+    },
+
+    "自分": {
+      A: 2, B: 2, C: 1, D: 5,
+      E: 1, F: 2, G: 2, H: 2
+    },
+
+    "うち": {
+      A: 1, B: 1, C: 2, D: 1,
+      E: 5, F: 1, G: 2, H: 1
+    },
+
+    "わし": {
+      A: 1, B: 3, C: 2, D: 1,
+      E: 1, F: 5, G: 1, H: 1
+    },
+
+    "あたい": {
+      A: 2, B: 1, C: 1, D: 1,
+      E: 1, F: 1, G: 5, H: 3
+    },
+
+    "ぼくちん": {
+      A: 1, B: 2, C: 1, D: 2,
+      E: 1, F: 1, G: 3, H: 5
+    }
+
+  };
+
+  return axisMap[pronoun];
+
+}
+
+
+// ----------------------------------------
+// 相性表示
+// ----------------------------------------
+
+function createCompatibility(results, category) {
+
+  const item = results[0];
+
+  const type = typeData[item.key];
+
+  return `
+
+    <div class="compatibilityItem">
+
+      <div class="compatibilityCategory">
+        ${category}
+      </div>
+
+      <div class="compatibilityType">
+        TYPE ${type.number}
+        ${type.name}
+      </div>
+
+      <div class="compatibilityPronoun">
+        ${item.key.split("-")[0]}
+      </div>
+
+      <div class="compatibilityCatch">
+        ${type.catch}
+      </div>
+
+    </div>
+
+  `;
+
+}
+
 
 // ----------------------------------------
 // 画面取得
@@ -571,6 +747,40 @@ function showResult() {
 
   const type = typeData[`${pronoun}-${processType}`];
 
+  // ------------------------------------
+  // 相性計算
+  // ------------------------------------
+
+  const myTypeKey = `${pronoun}-${processType}`;
+
+  const compatibilityResults =
+    calculateCompatibility(myTypeKey);
+
+  const closeType = compatibilityResults[0];
+
+  const stimulatingType = compatibilityResults[1];
+
+  const complementaryType = compatibilityResults
+    .slice()
+    .sort((a, b) => {
+
+      const aProcess =
+        a.key.split("-")[1];
+
+      const bProcess =
+        b.key.split("-")[1];
+
+      const aDifferent =
+        aProcess !== processType ? 1 : 0;
+
+      const bDifferent =
+        bProcess !== processType ? 1 : 0;
+
+      return bDifferent - aDifferent;
+
+    })[0];
+
+
   quizScreen.innerHTML = `
 
     <div class="resultScreen">
@@ -603,13 +813,13 @@ function showResult() {
 
       <div class="resultPercent">
 
-        ${createMeter("自己決定", scores.A, scores.A, "自分で決める")}
+        ${createMeter("自己決定", scores.A)}
 
-        ${createMeter("理解", scores.B, scores.B, "理由を知る")}
+        ${createMeter("理解", scores.B)}
 
-        ${createMeter("調整", scores.C, scores.C, "全体を整える")}
+        ${createMeter("調整", scores.C)}
 
-        ${createMeter("内省", scores.D, scores.D, "自分の中で考える")}
+        ${createMeter("内省", scores.D)}
 
       </div>
 
@@ -617,9 +827,38 @@ function showResult() {
         ${type.description}
       </div>
 
-<button class="shareButton" id="shareButton">
-  結果をシェア
-</button>
+
+      <!-- ============================== -->
+      <!-- 相性 -->
+      <!-- ============================== -->
+
+      <div class="compatibilitySection">
+
+        <p class="smallTitle">
+          COMPATIBILITY
+        </p>
+
+        ${createCompatibility(
+          [closeType],
+          "近いタイプ"
+        )}
+
+        ${createCompatibility(
+          [complementaryType],
+          "補完し合うタイプ"
+        )}
+
+        ${createCompatibility(
+          [stimulatingType],
+          "刺激を受けやすいタイプ"
+        )}
+
+      </div>
+
+
+      <button class="shareButton" id="shareButton">
+        結果をシェア
+      </button>
 
       <button class="retryButton" id="retryButton">
         もう一度診断する
@@ -632,41 +871,52 @@ function showResult() {
 
   animateResult();
 
-document
-  .getElementById("shareButton")
-  .addEventListener("click", async () => {
 
-    const shareText =
-      `一人称診断の結果は「${pronoun}」でした。\n` +
-      `TYPE ${type.number} ${type.name}\n` +
-      `${type.catch}\n\n` +
-      `#一人称診断`;
+  // ------------------------------------
+  // シェア
+  // ------------------------------------
 
-    if (navigator.share) {
+  document
+    .getElementById("shareButton")
+    .addEventListener("click", async () => {
 
-      try {
+      const shareText =
+        `一人称診断の結果は「${pronoun}」でした。\n` +
+        `TYPE ${type.number} ${type.name}\n` +
+        `${type.catch}\n\n` +
+        `#一人称診断`;
 
-        await navigator.share({
-          title: "一人称診断",
-          text: shareText,
-          url: window.location.href
-        });
+      if (navigator.share) {
 
-      } catch (error) {
+        try {
 
-        console.log("共有をキャンセルしました");
+          await navigator.share({
+            title: "一人称診断",
+            text: shareText,
+            url: window.location.href
+          });
+
+        } catch (error) {
+
+          console.log("共有をキャンセルしました");
+
+        }
+
+      } else {
+
+        alert(
+          "この端末では共有機能に対応していません。"
+        );
 
       }
 
-    } else {
+    });
 
-      alert(
-        "この端末では共有機能に対応していません。"
-      );
 
-    }
+  // ------------------------------------
+  // リトライ
+  // ------------------------------------
 
-  });
   document
     .getElementById("retryButton")
     .addEventListener("click", () => {
@@ -676,8 +926,6 @@ document
     });
 
 }
-
-
 // ----------------------------------------
 // メーター生成
 // ----------------------------------------
@@ -701,10 +949,12 @@ function createMeter(label, value) {
       </div>
 
       <div class="percentBar">
+
         <div
           class="percentFill"
           style="--meter-width:${percent}%">
         </div>
+
       </div>
 
     </div>
@@ -720,13 +970,45 @@ function createMeter(label, value) {
 
 function animateResult() {
 
-  const complete =
-    document.getElementById("analysisComplete");
+  const complete = document.getElementById("analysisComplete");
+  const pronoun = document.querySelector(".resultPronoun");
 
+  const typeNumber = document.querySelector(".typeNumber");
+  const resultType = document.querySelector(".resultType");
+  const catchphrase = document.querySelector(".catchphrase");
+
+  // ANALYSIS COMPLETE
   setTimeout(() => {
-
-    complete.classList.add("show");
-
+    if (complete) {
+      complete.classList.add("show");
+    }
   }, 900);
 
+  // 一人称
+  setTimeout(() => {
+    if (pronoun) {
+      pronoun.classList.add("reveal");
+    }
+  }, 1800);
+
+  // TYPE番号
+  setTimeout(() => {
+    if (typeNumber) {
+      typeNumber.classList.add("resultVisible");
+    }
+  }, 2800);
+
+  // タイプ名
+  setTimeout(() => {
+    if (resultType) {
+      resultType.classList.add("resultVisible");
+    }
+  }, 3000);
+
+  // キャッチコピー
+  setTimeout(() => {
+    if (catchphrase) {
+      catchphrase.classList.add("resultVisible");
+    }
+  }, 3200);
 }
