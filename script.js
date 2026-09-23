@@ -239,6 +239,10 @@ const questions = [
 
 let currentQuestion = 0;
 
+// 回答履歴
+// 例：answerHistory[0] = Q1の回答
+const answerHistory = [];
+
 const scores = {
   A: 0, // 自律
   B: 0, // 理解
@@ -389,6 +393,7 @@ const typeData = {
 
 };
 
+
 // ----------------------------------------
 // 相性判定
 // ----------------------------------------
@@ -409,8 +414,11 @@ function getTypeKeyFromScores() {
 
 function calculateCompatibility(myTypeKey) {
 
-  const myPronoun = myTypeKey.split("-")[0];
-  const myProcess = myTypeKey.split("-")[1];
+  const myPronoun =
+    myTypeKey.split("-")[0];
+
+  const myProcess =
+    myTypeKey.split("-")[1];
 
   const myAxis = {
     A: scores.A,
@@ -432,7 +440,8 @@ function calculateCompatibility(myTypeKey) {
     const [otherPronoun, otherProcess] =
       typeKey.split("-");
 
-    const otherAxis = getTypeAxis(otherPronoun);
+    const otherAxis =
+      getTypeAxis(otherPronoun);
 
     let similarity = 0;
     let difference = 0;
@@ -443,14 +452,16 @@ function calculateCompatibility(myTypeKey) {
       const otherValue = otherAxis[key];
 
       similarity +=
-        Math.min(Math.abs(myValue), Math.abs(otherValue));
+        Math.min(
+          Math.abs(myValue),
+          Math.abs(otherValue)
+        );
 
       difference +=
         Math.abs(myValue - otherValue);
 
     });
 
-    // A/Bの組み合わせ
     const processBonus =
       myProcess === otherProcess ? 8 : 4;
 
@@ -466,7 +477,9 @@ function calculateCompatibility(myTypeKey) {
 
   });
 
-  results.sort((a, b) => b.score - a.score);
+  results.sort((a, b) =>
+    b.score - a.score
+  );
 
   return results;
 
@@ -570,13 +583,94 @@ function createCompatibility(results, category) {
 // 画面取得
 // ----------------------------------------
 
-const startScreen = document.getElementById("startScreen");
-const quizScreen = document.getElementById("quizScreen");
+const startScreen =
+  document.getElementById("startScreen");
 
-const startButton = document.getElementById("startButton");
-const questionNumber = document.getElementById("questionNumber");
-const questionText = document.getElementById("questionText");
-const answersContainer = document.getElementById("answers");
+const quizScreen =
+  document.getElementById("quizScreen");
+
+const startButton =
+  document.getElementById("startButton");
+
+let questionNumber =
+  document.getElementById("questionNumber");
+
+let questionText =
+  document.getElementById("questionText");
+
+let answersContainer =
+  document.getElementById("answers");
+
+
+// ----------------------------------------
+// 診断画面の元HTMLを保存
+// ----------------------------------------
+
+const quizTemplate =
+  quizScreen.innerHTML;
+
+
+// ----------------------------------------
+// スコア完全リセット
+// ----------------------------------------
+
+function resetScores() {
+
+  Object.keys(scores).forEach(key => {
+    scores[key] = 0;
+  });
+
+  externalScore = 0;
+
+}
+
+
+// ----------------------------------------
+// 回答履歴からスコアを再計算
+// ----------------------------------------
+
+function recalculateScores() {
+
+  resetScores();
+
+  const externalChoices = ["A", "E", "G", "H"];
+  const internalChoices = ["D", "F"];
+
+  answerHistory.forEach(answerScore => {
+
+    if (!answerScore) return;
+
+    Object.keys(answerScore).forEach(key => {
+
+      scores[key] += answerScore[key];
+
+    });
+
+    let external = 0;
+    let internal = 0;
+
+    externalChoices.forEach(key => {
+
+      if (answerScore[key]) {
+        external += answerScore[key];
+      }
+
+    });
+
+    internalChoices.forEach(key => {
+
+      if (answerScore[key]) {
+        internal += answerScore[key];
+      }
+
+    });
+
+    externalScore +=
+      external - internal;
+
+  });
+
+}
 
 
 // ----------------------------------------
@@ -587,14 +681,23 @@ startButton.addEventListener("click", () => {
 
   currentQuestion = 0;
 
-  Object.keys(scores).forEach(key => {
-    scores[key] = 0;
-  });
+  answerHistory.length = 0;
 
-  externalScore = 0;
+  resetScores();
 
   startScreen.classList.add("hidden");
   quizScreen.classList.remove("hidden");
+
+  // 診断開始時点をQ1として登録
+  history.pushState(
+    {
+      firstPersonDiagnosis: true,
+      screen: "quiz",
+      question: 0
+    },
+    "",
+    "#q1"
+  );
 
   showQuestion();
 
@@ -607,31 +710,90 @@ startButton.addEventListener("click", () => {
 
 function showQuestion() {
 
-  const question = questions[currentQuestion];
+  // 結果画面から戻ってきた場合は
+  // 元の質問画面を復元
+  if (
+    !document.getElementById("questionNumber") ||
+    !document.getElementById("questionText") ||
+    !document.getElementById("answers")
+  ) {
+
+    quizScreen.innerHTML =
+      quizTemplate;
+
+  }
+
+
+  // DOMを再取得
+  questionNumber =
+    document.getElementById("questionNumber");
+
+  questionText =
+    document.getElementById("questionText");
+
+  answersContainer =
+    document.getElementById("answers");
+
+
+  const question =
+    questions[currentQuestion];
+
+
+  if (!question) return;
+
 
   questionNumber.textContent =
     `Q${currentQuestion + 1} / ${questions.length}`;
 
-  questionText.textContent = question.text;
+  questionText.textContent =
+    question.text;
+
 
   answersContainer.innerHTML = "";
 
+
   question.answers.forEach((answer, index) => {
 
-    const button = document.createElement("button");
+    const button =
+      document.createElement("button");
 
-    button.className = "answerButton";
+    button.className =
+      "answerButton";
 
-    button.textContent = answer[0];
+    button.textContent =
+      answer[0];
 
     button.dataset.number =
       String(index + 1).padStart(2, "0");
 
-    button.addEventListener("click", () => {
 
-      selectAnswer(answer[1]);
+    // ------------------------------------
+    // 以前選んでいた回答を表示
+    // ------------------------------------
 
-    });
+    const savedAnswer =
+      answerHistory[currentQuestion];
+
+    if (
+      savedAnswer &&
+      JSON.stringify(savedAnswer) ===
+      JSON.stringify(answer[1])
+    ) {
+
+      button.classList.add("selected");
+
+    }
+
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        selectAnswer(answer[1]);
+
+      }
+    );
+
 
     answersContainer.appendChild(button);
 
@@ -646,53 +808,152 @@ function showQuestion() {
 
 function selectAnswer(answerScore) {
 
-  Object.keys(answerScore).forEach(key => {
-
-    scores[key] += answerScore[key];
-
-  });
+  // 現在の問題の回答を保存
+  answerHistory[currentQuestion] =
+    answerScore;
 
 
-  // ------------------------------------
-  // A/B判定用
-  // A = 外に出しながら整理する傾向
-  // B = 内側で整理してから動く傾向
-  // ------------------------------------
+  // 今いる問題より後ろにある
+  // 古い回答を破棄
+  answerHistory.length =
+    currentQuestion + 1;
 
-  const externalChoices = ["A", "E", "G", "H"];
-  const internalChoices = ["D", "F"];
 
-  let external = 0;
-  let internal = 0;
-
-  externalChoices.forEach(key => {
-    if (answerScore[key]) {
-      external += answerScore[key];
-    }
-  });
-
-  internalChoices.forEach(key => {
-    if (answerScore[key]) {
-      internal += answerScore[key];
-    }
-  });
-
-  externalScore += external - internal;
+  // 回答履歴から再計算
+  recalculateScores();
 
 
   currentQuestion++;
 
-  if (currentQuestion < questions.length) {
+
+  // ------------------------------------
+  // 次の問題
+  // ------------------------------------
+
+  if (
+    currentQuestion < questions.length
+  ) {
+
+    history.pushState(
+      {
+        firstPersonDiagnosis: true,
+        screen: "quiz",
+        question: currentQuestion
+      },
+      "",
+      `#q${currentQuestion + 1}`
+    );
 
     showQuestion();
 
-  } else {
-
-    showResult();
+    return;
 
   }
 
+
+  // ------------------------------------
+  // 結果
+  // ------------------------------------
+
+  history.pushState(
+    {
+      firstPersonDiagnosis: true,
+      screen: "result"
+    },
+    "",
+    "#result"
+  );
+
+  showResult();
+
 }
+
+
+// ----------------------------------------
+// ブラウザ戻る・進む
+// ----------------------------------------
+
+window.addEventListener(
+  "popstate",
+  (event) => {
+
+    const state =
+      event.state;
+
+
+    // ------------------------------------
+    // 診断履歴ではない場所へ戻った
+    // ------------------------------------
+
+    if (
+      !state ||
+      !state.firstPersonDiagnosis
+    ) {
+
+      currentQuestion = 0;
+
+      answerHistory.length = 0;
+
+      resetScores();
+
+      quizScreen.classList.add("hidden");
+      startScreen.classList.remove("hidden");
+
+      return;
+
+    }
+
+
+    // ------------------------------------
+    // 質問画面
+    // ------------------------------------
+
+    if (state.screen === "quiz") {
+
+      currentQuestion =
+        state.question;
+
+
+      // 現在位置より後ろの回答は
+      // 無効にする
+      answerHistory.length =
+        currentQuestion;
+
+
+      recalculateScores();
+
+
+      startScreen.classList.add("hidden");
+      quizScreen.classList.remove("hidden");
+
+
+      showQuestion();
+
+      return;
+
+    }
+
+
+    // ------------------------------------
+    // 結果画面
+    // ------------------------------------
+
+    if (state.screen === "result") {
+
+      currentQuestion =
+        questions.length;
+
+      recalculateScores();
+
+      startScreen.classList.add("hidden");
+      quizScreen.classList.remove("hidden");
+
+      showResult();
+
+    }
+
+  }
+);
 
 
 // ----------------------------------------
@@ -702,6 +963,7 @@ function selectAnswer(answerScore) {
 function getPronoun() {
 
   const axisScores = {
+
     A: scores.A,
     B: scores.B,
     C: scores.C,
@@ -710,12 +972,20 @@ function getPronoun() {
     F: scores.F,
     G: scores.G,
     H: scores.H
+
   };
 
-  const sorted = Object.entries(axisScores)
-    .sort((a, b) => b[1] - a[1]);
 
-  return pronouns[sorted[0][0]];
+  const sorted =
+    Object.entries(axisScores)
+      .sort((a, b) =>
+        b[1] - a[1]
+      );
+
+
+  return pronouns[
+    sorted[0][0]
+  ];
 
 }
 
@@ -741,55 +1011,86 @@ function getProcessType() {
 
 function showResult() {
 
-  const pronoun = getPronoun();
+  // 念のため最終スコアを再計算
+  recalculateScores();
 
-  const processType = getProcessType();
 
-  const type = typeData[`${pronoun}-${processType}`];
+  const pronoun =
+    getPronoun();
+
+  const processType =
+    getProcessType();
+
+  const type =
+    typeData[
+      `${pronoun}-${processType}`
+    ];
+
 
   // ------------------------------------
   // 相性計算
   // ------------------------------------
 
-  const myTypeKey = `${pronoun}-${processType}`;
+  const myTypeKey =
+    `${pronoun}-${processType}`;
+
 
   const compatibilityResults =
-    calculateCompatibility(myTypeKey);
+    calculateCompatibility(
+      myTypeKey
+    );
 
-  const closeType = compatibilityResults[0];
 
-  const stimulatingType = compatibilityResults[1];
+  const closeType =
+    compatibilityResults[0];
 
-  const complementaryType = compatibilityResults
-    .slice()
-    .sort((a, b) => {
+  const stimulatingType =
+    compatibilityResults[1];
 
-      const aProcess =
-        a.key.split("-")[1];
 
-      const bProcess =
-        b.key.split("-")[1];
+  const complementaryType =
+    compatibilityResults
+      .slice()
+      .sort((a, b) => {
 
-      const aDifferent =
-        aProcess !== processType ? 1 : 0;
+        const aProcess =
+          a.key.split("-")[1];
 
-      const bDifferent =
-        bProcess !== processType ? 1 : 0;
+        const bProcess =
+          b.key.split("-")[1];
 
-      return bDifferent - aDifferent;
 
-    })[0];
+        const aDifferent =
+          aProcess !== processType
+            ? 1
+            : 0;
+
+        const bDifferent =
+          bProcess !== processType
+            ? 1
+            : 0;
+
+
+        return bDifferent -
+          aDifferent;
+
+      })[0];
 
 
   quizScreen.innerHTML = `
 
     <div class="resultScreen">
 
-      <p class="analysisComplete" id="analysisComplete">
+      <p
+        class="analysisComplete"
+        id="analysisComplete"
+      >
         ANALYSIS COMPLETE
       </p>
 
-      <p class="smallTitle">RESULT</p>
+      <p class="smallTitle">
+        RESULT
+      </p>
 
       <h2 class="resultQuestion">
         あなたの一人称は
@@ -800,10 +1101,10 @@ function showResult() {
       </div>
 
       <img
-  class="resultEmblem"
-  src="emblem/${type.number}.png"
-  alt=""
->
+        class="resultEmblem"
+        src="emblem/${type.number}.png"
+        alt=""
+      >
 
       <p class="typeNumber">
         TYPE ${type.number}
@@ -819,13 +1120,25 @@ function showResult() {
 
       <div class="resultPercent">
 
-        ${createMeter("自己決定", scores.A)}
+        ${createMeter(
+          "自己決定",
+          scores.A
+        )}
 
-        ${createMeter("理解", scores.B)}
+        ${createMeter(
+          "理解",
+          scores.B
+        )}
 
-        ${createMeter("調整", scores.C)}
+        ${createMeter(
+          "調整",
+          scores.C
+        )}
 
-        ${createMeter("内省", scores.D)}
+        ${createMeter(
+          "内省",
+          scores.D
+        )}
 
       </div>
 
@@ -833,10 +1146,6 @@ function showResult() {
         ${type.description}
       </div>
 
-
-      <!-- ============================== -->
-      <!-- 相性 -->
-      <!-- ============================== -->
 
       <div class="compatibilitySection">
 
@@ -862,11 +1171,17 @@ function showResult() {
       </div>
 
 
-      <button class="shareButton" id="shareButton">
+      <button
+        class="shareButton"
+        id="shareButton"
+      >
         結果をシェア
       </button>
 
-      <button class="retryButton" id="retryButton">
+      <button
+        class="retryButton"
+        id="retryButton"
+      >
         もう一度診断する
       </button>
 
@@ -884,39 +1199,52 @@ function showResult() {
 
   document
     .getElementById("shareButton")
-    .addEventListener("click", async () => {
+    .addEventListener(
+      "click",
+      async () => {
 
-      const shareText =
-        `一人称診断の結果は「${pronoun}」でした。\n` +
-        `TYPE ${type.number} ${type.name}\n` +
-        `${type.catch}\n\n` +
-        `#一人称診断`;
+        const shareText =
+          `一人称診断の結果は「${pronoun}」でした。\n` +
+          `TYPE ${type.number} ${type.name}\n` +
+          `${type.catch}\n\n` +
+          `#一人称診断`;
 
-      if (navigator.share) {
 
-        try {
+        if (navigator.share) {
 
-          await navigator.share({
-            title: "一人称診断",
-            text: shareText,
-            url: window.location.href
-          });
+          try {
 
-        } catch (error) {
+            await navigator.share({
 
-          console.log("共有をキャンセルしました");
+              title:
+                "一人称診断",
+
+              text:
+                shareText,
+
+              url:
+                window.location.href
+
+            });
+
+          } catch (error) {
+
+            console.log(
+              "共有をキャンセルしました"
+            );
+
+          }
+
+        } else {
+
+          alert(
+            "この端末では共有機能に対応していません。"
+          );
 
         }
 
-      } else {
-
-        alert(
-          "この端末では共有機能に対応していません。"
-        );
-
       }
-
-    });
+    );
 
 
   // ------------------------------------
@@ -925,13 +1253,69 @@ function showResult() {
 
   document
     .getElementById("retryButton")
-    .addEventListener("click", () => {
+    .addEventListener(
+      "click",
+      () => {
 
-      location.reload();
+        // 新しい診断として開始
+        currentQuestion = 0;
 
-    });
+        answerHistory.length = 0;
+
+        resetScores();
+
+
+        // URLを診断開始前に戻す
+        history.pushState(
+          {
+            firstPersonDiagnosis: true,
+            screen: "quiz",
+            question: 0
+          },
+          "",
+          "#q1"
+        );
+
+
+        // quiz画面を元に戻す
+        quizScreen.innerHTML =
+          quizTemplate;
+
+
+        quizScreen.classList.remove(
+          "hidden"
+        );
+
+        startScreen.classList.add(
+          "hidden"
+        );
+
+
+        // DOM再取得
+        questionNumber =
+          document.getElementById(
+            "questionNumber"
+          );
+
+        questionText =
+          document.getElementById(
+            "questionText"
+          );
+
+        answersContainer =
+          document.getElementById(
+            "answers"
+          );
+
+
+        showQuestion();
+
+      }
+    );
 
 }
+
+
 // ----------------------------------------
 // メーター生成
 // ----------------------------------------
@@ -940,26 +1324,48 @@ function createMeter(label, value) {
 
   const maxValue = 20;
 
-  let percent =
-    Math.round(((value + maxValue) / (maxValue * 2)) * 100);
 
-  percent = Math.max(0, Math.min(100, percent));
+  let percent =
+    Math.round(
+      (
+        (value + maxValue) /
+        (maxValue * 2)
+      ) * 100
+    );
+
+
+  percent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        percent
+      )
+    );
+
 
   return `
 
     <div class="percentItem">
 
       <div class="percentLabel">
-        <span>${label}</span>
-        <span>${percent}%</span>
+
+        <span>
+          ${label}
+        </span>
+
+        <span>
+          ${percent}%
+        </span>
+
       </div>
 
       <div class="percentBar">
 
         <div
           class="percentFill"
-          style="--meter-width:${percent}%">
-        </div>
+          style="--meter-width:${percent}%"
+        ></div>
 
       </div>
 
@@ -976,192 +1382,385 @@ function createMeter(label, value) {
 
 function animateResult() {
 
-  const complete = document.getElementById("analysisComplete");
-  const pronoun = document.querySelector(".resultPronoun");
+  const complete =
+    document.getElementById(
+      "analysisComplete"
+    );
 
-  const typeNumber = document.querySelector(".typeNumber");
-  const resultType = document.querySelector(".resultType");
-  const catchphrase = document.querySelector(".catchphrase");
-const emblem = document.querySelector(".resultEmblem");
- 
-// ANALYSIS COMPLETE
+  const pronoun =
+    document.querySelector(
+      ".resultPronoun"
+    );
+
+  const typeNumber =
+    document.querySelector(
+      ".typeNumber"
+    );
+
+  const resultType =
+    document.querySelector(
+      ".resultType"
+    );
+
+  const catchphrase =
+    document.querySelector(
+      ".catchphrase"
+    );
+
+  const emblem =
+    document.querySelector(
+      ".resultEmblem"
+    );
+
+
+  // ANALYSIS COMPLETE
   setTimeout(() => {
+
     if (complete) {
-      complete.classList.add("show");
+
+      complete.classList.add(
+        "show"
+      );
+
     }
+
   }, 900);
+
 
   // 一人称
   setTimeout(() => {
+
     if (pronoun) {
-      pronoun.classList.add("reveal");
+
+      pronoun.classList.add(
+        "reveal"
+      );
+
     }
+
   }, 1800);
 
+
   // エンブレム
-setTimeout(() => {
-  if (emblem) {
-    emblem.classList.add("emblemReveal");
-  }
-}, 2300);
+  setTimeout(() => {
+
+    if (emblem) {
+
+      emblem.classList.add(
+        "emblemReveal"
+      );
+
+    }
+
+  }, 2300);
+
 
   // TYPE番号
   setTimeout(() => {
+
     if (typeNumber) {
-      typeNumber.classList.add("resultVisible");
+
+      typeNumber.classList.add(
+        "resultVisible"
+      );
+
     }
+
   }, 2800);
+
 
   // タイプ名
   setTimeout(() => {
+
     if (resultType) {
-      resultType.classList.add("resultVisible");
+
+      resultType.classList.add(
+        "resultVisible"
+      );
+
     }
+
   }, 3000);
+
 
   // キャッチコピー
   setTimeout(() => {
+
     if (catchphrase) {
-      catchphrase.classList.add("resultVisible");
+
+      catchphrase.classList.add(
+        "resultVisible"
+      );
+
     }
+
   }, 3200);
+
 }
+
 
 // ----------------------------------------
 // 診断について・利用規約 モーダル
 // ----------------------------------------
 
-const aboutButton = document.getElementById("aboutButton");
-const termsButton = document.getElementById("termsButton");
+const aboutButton =
+  document.getElementById(
+    "aboutButton"
+  );
 
-const aboutModal = document.getElementById("aboutModal");
-const termsModal = document.getElementById("termsModal");
+const termsButton =
+  document.getElementById(
+    "termsButton"
+  );
 
-const closeButtons = document.querySelectorAll(".closeModal");
+const aboutModal =
+  document.getElementById(
+    "aboutModal"
+  );
+
+const termsModal =
+  document.getElementById(
+    "termsModal"
+  );
+
+const closeButtons =
+  document.querySelectorAll(
+    ".closeModal"
+  );
+
 
 // 診断について
 if (aboutButton) {
-  aboutButton.addEventListener("click", () => {
-    aboutModal.classList.add("active");
-  });
+
+  aboutButton.addEventListener(
+    "click",
+    () => {
+
+      aboutModal.classList.add(
+        "active"
+      );
+
+    }
+  );
+
 }
+
 
 // 利用規約
 if (termsButton) {
-  termsButton.addEventListener("click", () => {
-    termsModal.classList.add("active");
-  });
+
+  termsButton.addEventListener(
+    "click",
+    () => {
+
+      termsModal.classList.add(
+        "active"
+      );
+
+    }
+  );
+
 }
+
 
 // ×ボタン
 closeButtons.forEach(button => {
-  button.addEventListener("click", () => {
-    aboutModal.classList.remove("active");
-    termsModal.classList.remove("active");
-  });
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      aboutModal.classList.remove(
+        "active"
+      );
+
+      termsModal.classList.remove(
+        "active"
+      );
+
+    }
+  );
+
 });
+
 
 // モーダル外側をクリックして閉じる
-[aboutModal, termsModal].forEach(modal => {
-  if (modal) {
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        modal.classList.remove("active");
+[aboutModal, termsModal]
+  .forEach(modal => {
+
+    if (modal) {
+
+      modal.addEventListener(
+        "click",
+        (event) => {
+
+          if (
+            event.target === modal
+          ) {
+
+            modal.classList.remove(
+              "active"
+            );
+
+          }
+
+        }
+      );
+
+    }
+
+  });
+
+
+// ========================================
+// TOP起動演出
+// ========================================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const loadingScreen =
+      document.getElementById(
+        "loadingScreen"
+      );
+
+    const startScreen =
+      document.getElementById(
+        "startScreen"
+      );
+
+    const loadingPercent =
+      document.getElementById(
+        "loadingPercent"
+      );
+
+    const loadingBarProgress =
+      document.getElementById(
+        "loadingBarProgress"
+      );
+
+    const loadingMessage =
+      document.getElementById(
+        "loadingMessage"
+      );
+
+
+    // 必要な要素がなければ終了
+    if (
+      !loadingScreen ||
+      !startScreen ||
+      !loadingPercent ||
+      !loadingBarProgress ||
+      !loadingMessage
+    ) {
+
+      return;
+
+    }
+
+
+    let progress = 0;
+
+
+    const messages = [
+
+      {
+        percent: 0,
+        text:
+          "PERSONA ANALYSIS SYSTEM"
+      },
+
+      {
+        percent: 20,
+        text:
+          "SCANNING SELF..."
+      },
+
+      {
+        percent: 45,
+        text:
+          "ANALYZING BEHAVIOR..."
+      },
+
+      {
+        percent: 70,
+        text:
+          "ANALYZING EXPRESSION..."
+      },
+
+      {
+        percent: 90,
+        text:
+          "SEARCHING FOR TRUE PRONOUN..."
+      },
+
+      {
+        percent: 100,
+        text:
+          "ANALYSIS READY"
       }
-    });
+
+    ];
+
+
+    const timer =
+      setInterval(
+        () => {
+
+          progress++;
+
+
+          loadingPercent.textContent =
+            progress + "%";
+
+
+          loadingBarProgress.style.width =
+            progress + "%";
+
+
+          const currentMessage =
+            [...messages]
+              .reverse()
+              .find(
+                item =>
+                  progress >= item.percent
+              );
+
+
+          if (currentMessage) {
+
+            loadingMessage.textContent =
+              currentMessage.text;
+
+          }
+
+
+          if (progress >= 100) {
+
+            clearInterval(timer);
+
+
+            setTimeout(
+              () => {
+
+                loadingScreen.classList.add(
+                  "fadeOut"
+                );
+
+                startScreen.classList.remove(
+                  "hidden"
+                );
+
+              },
+              900
+            );
+
+          }
+
+        },
+        30
+      );
+
   }
-});
-
-/* =========================================
-   TOP起動演出
-========================================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const loadingScreen = document.getElementById("loadingScreen");
-  const startScreen = document.getElementById("startScreen");
-
-  const loadingPercent =
-    document.getElementById("loadingPercent");
-
-  const loadingBarProgress =
-    document.getElementById("loadingBarProgress");
-
-  const loadingMessage =
-    document.getElementById("loadingMessage");
-
-
-  let progress = 0;
-
-
-  const messages = [
-    {
-      percent: 0,
-      text: "PERSONA ANALYSIS SYSTEM"
-    },
-    {
-      percent: 20,
-      text: "SCANNING SELF..."
-    },
-    {
-      percent: 45,
-      text: "ANALYZING BEHAVIOR..."
-    },
-    {
-      percent: 70,
-      text: "ANALYZING EXPRESSION..."
-    },
-    {
-      percent: 90,
-      text: "SEARCHING FOR TRUE PRONOUN..."
-    },
-    {
-      percent: 100,
-      text: "ANALYSIS READY"
-    }
-  ];
-
-
-  const timer = setInterval(() => {
-
-    progress++;
-
-    loadingPercent.textContent =
-      progress + "%";
-
-    loadingBarProgress.style.width =
-      progress + "%";
-
-
-    const currentMessage =
-      [...messages]
-        .reverse()
-        .find(item => progress >= item.percent);
-
-
-    if (currentMessage) {
-
-      loadingMessage.textContent =
-        currentMessage.text;
-
-    }
-
-
-    if (progress >= 100) {
-
-      clearInterval(timer);
-
-
-      setTimeout(() => {
-
-        loadingScreen.classList.add("fadeOut");
-
-        startScreen.classList.remove("hidden");
-
-      }, 900);
-
-    }
-
-  }, 30);
-
-});
+);
