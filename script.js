@@ -1071,3 +1071,97 @@ closeButtons.forEach(button => {
     });
   }
 });
+
+/* =========================================
+   TOP起動演出
+========================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const loadingScreen = document.getElementById("loadingScreen");
+  const startScreen = document.getElementById("startScreen");
+
+  const loadingPercent =
+    document.getElementById("loadingPercent");
+
+  const loadingBarProgress =
+    document.getElementById("loadingBarProgress");
+
+  const loadingMessage =
+    document.getElementById("loadingMessage");
+
+
+  let progress = 0;
+
+
+  const messages = [
+    {
+      percent: 0,
+      text: "PERSONA ANALYSIS SYSTEM"
+    },
+    {
+      percent: 20,
+      text: "SCANNING SELF..."
+    },
+    {
+      percent: 45,
+      text: "ANALYZING BEHAVIOR..."
+    },
+    {
+      percent: 70,
+      text: "ANALYZING EXPRESSION..."
+    },
+    {
+      percent: 90,
+      text: "SEARCHING FOR TRUE PRONOUN..."
+    },
+    {
+      percent: 100,
+      text: "ANALYSIS READY"
+    }
+  ];
+
+
+  const timer = setInterval(() => {
+
+    progress++;
+
+    loadingPercent.textContent =
+      progress + "%";
+
+    loadingBarProgress.style.width =
+      progress + "%";
+
+
+    const currentMessage =
+      [...messages]
+        .reverse()
+        .find(item => progress >= item.percent);
+
+
+    if (currentMessage) {
+
+      loadingMessage.textContent =
+        currentMessage.text;
+
+    }
+
+
+    if (progress >= 100) {
+
+      clearInterval(timer);
+
+
+      setTimeout(() => {
+
+        loadingScreen.classList.add("fadeOut");
+
+        startScreen.classList.remove("hidden");
+
+      }, 900);
+
+    }
+
+  }, 30);
+
+});
