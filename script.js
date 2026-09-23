@@ -799,6 +799,12 @@ function showResult() {
         ${pronoun}
       </div>
 
+      <img
+  class="resultEmblem"
+  src="emblem/${type.number}.png"
+  alt=""
+>
+
       <p class="typeNumber">
         TYPE ${type.number}
       </p>
@@ -976,8 +982,9 @@ function animateResult() {
   const typeNumber = document.querySelector(".typeNumber");
   const resultType = document.querySelector(".resultType");
   const catchphrase = document.querySelector(".catchphrase");
-
-  // ANALYSIS COMPLETE
+const emblem = document.querySelector(".resultEmblem");
+ 
+// ANALYSIS COMPLETE
   setTimeout(() => {
     if (complete) {
       complete.classList.add("show");
@@ -990,6 +997,13 @@ function animateResult() {
       pronoun.classList.add("reveal");
     }
   }, 1800);
+
+  // エンブレム
+setTimeout(() => {
+  if (emblem) {
+    emblem.classList.add("emblemReveal");
+  }
+}, 2300);
 
   // TYPE番号
   setTimeout(() => {
@@ -1012,3 +1026,48 @@ function animateResult() {
     }
   }, 3200);
 }
+
+// ----------------------------------------
+// 診断について・利用規約 モーダル
+// ----------------------------------------
+
+const aboutButton = document.getElementById("aboutButton");
+const termsButton = document.getElementById("termsButton");
+
+const aboutModal = document.getElementById("aboutModal");
+const termsModal = document.getElementById("termsModal");
+
+const closeButtons = document.querySelectorAll(".closeModal");
+
+// 診断について
+if (aboutButton) {
+  aboutButton.addEventListener("click", () => {
+    aboutModal.classList.add("active");
+  });
+}
+
+// 利用規約
+if (termsButton) {
+  termsButton.addEventListener("click", () => {
+    termsModal.classList.add("active");
+  });
+}
+
+// ×ボタン
+closeButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    aboutModal.classList.remove("active");
+    termsModal.classList.remove("active");
+  });
+});
+
+// モーダル外側をクリックして閉じる
+[aboutModal, termsModal].forEach(modal => {
+  if (modal) {
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        modal.classList.remove("active");
+      }
+    });
+  }
+});
