@@ -1907,13 +1907,35 @@ body::after {
 }
 
 body.topNoiseActive #topNoise {
-  opacity: 0.22;
+  opacity: 0.18;
 
   animation:
-    tvStatic 0.07s steps(2) infinite,
-    tvFlicker 0.13s steps(2) infinite;
+    staticMove 0.08s steps(2) infinite,
+    noiseFadeOut 5s linear forwards;
 }
 
+@keyframes noiseFadeOut {
+
+  0% {
+    opacity: 0.18;
+  }
+
+  75% {
+    opacity: 0.18;
+  }
+
+  90% {
+    opacity: 0.10;
+  }
+
+  97% {
+    opacity: 0.03;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
 
 /* ノイズそのものがガサガサ動く */
 @keyframes tvStatic {
