@@ -1764,3 +1764,49 @@ document.addEventListener(
 
   }
 );
+
+/* =========================================
+   CRT起動演出
+========================================= */
+
+const loadingScreenElement =
+  document.getElementById("loadingScreen");
+
+const crtTransition =
+  document.getElementById("crtTransition");
+
+if (loadingScreenElement && crtTransition) {
+
+  const crtObserver = new MutationObserver(() => {
+
+    if (loadingScreenElement.classList.contains("fadeOut")) {
+
+      /*
+       * ロード画面が消える瞬間に
+       * CRTを即スタート
+       */
+      crtTransition.classList.remove("crtStart");
+
+      // アニメーションを確実に再起動
+      void crtTransition.offsetWidth;
+
+      crtTransition.classList.add("crtStart");
+
+      setTimeout(() => {
+  document.body.classList.add("topNoiseActive");
+}, 1250);
+
+setTimeout(() => {
+  document.body.classList.remove("topNoiseActive");
+}, 6250);
+
+      crtObserver.disconnect();
+    }
+
+  });
+
+  crtObserver.observe(loadingScreenElement, {
+    attributes: true,
+    attributeFilter: ["class"]
+  });
+}
